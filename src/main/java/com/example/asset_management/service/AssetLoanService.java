@@ -34,6 +34,7 @@ public class AssetLoanService {
     private final UserRepository userRepository;
     private final AuthService authService;
     private final EventService eventService;
+    private final KafkaEventService kafkaEventService;
 
     @Value("${app.loan.approval-threshold-days:7}")
     private int approvalThresholdDays;
@@ -82,6 +83,7 @@ public class AssetLoanService {
         // Publish event
         if (status == LoanStatus.loaned) {
             eventService.publishAssetAssignedEvent(savedLoan);
+            kafkaEventService.publishAssetAssignedEvent(savedLoan);
         }
 
         log.info("Asset {} assigned to user {} with status {}", asset.getAssetTag(), username, status);
@@ -109,8 +111,9 @@ public class AssetLoanService {
         loan.setApprovedAt(LocalDateTime.now());
         AssetLoan savedLoan = assetLoanRepository.save(loan);
 
-        // Publish event
+        // Publish events
         eventService.publishAssetAssignedEvent(savedLoan);
+        kafkaEventService.publishAssetAssignedEvent(savedLoan);
 
         log.info("Loan {} approved by {}", loanId, approverUsername);
         
@@ -142,8 +145,9 @@ public class AssetLoanService {
         asset.setStatus(AssetStatus.available);
         assetRepository.save(asset);
 
-        // Publish event
+        // Publish events
         eventService.publishAssetReturnedEvent(savedLoan);
+        kafkaEventService.publishAssetReturnedEvent(savedLoan);
 
         log.info("Asset {} returned by user {}", asset.getAssetTag(), username);
         

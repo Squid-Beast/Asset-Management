@@ -19,6 +19,7 @@ public class ScheduledService {
 
     private final AssetLoanRepository assetLoanRepository;
     private final EventService eventService;
+    private final KafkaEventService kafkaEventService;
 
     @Value("${app.due-reminder-days:2}")
     private int dueReminderDays;
@@ -38,6 +39,7 @@ public class ScheduledService {
         for (AssetLoan loan : dueSoonLoans) {
             try {
                 eventService.publishAssetDueSoonEvent(loan);
+                kafkaEventService.publishAssetDueSoonEvent(loan);
                 log.info("Published AssetDueSoon event for loan ID: {}", loan.getId());
             } catch (Exception e) {
                 log.error("Failed to publish AssetDueSoon event for loan ID: {}", loan.getId(), e);
@@ -55,6 +57,7 @@ public class ScheduledService {
                 assetLoanRepository.save(loan);
                 
                 eventService.publishAssetOverdueEvent(loan);
+                kafkaEventService.publishAssetOverdueEvent(loan);
                 log.info("Published AssetOverdue event for loan ID: {}", loan.getId());
             } catch (Exception e) {
                 log.error("Failed to publish AssetOverdue event for loan ID: {}", loan.getId(), e);

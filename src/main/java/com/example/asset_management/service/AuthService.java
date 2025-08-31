@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -30,6 +32,7 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final KafkaEventService kafkaEventService;
     private final PasswordEncoder passwordEncoder;
 
     public LoginResponse login(LoginRequest loginRequest) {
@@ -58,6 +61,13 @@ public class AuthService {
         // Update last login
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
+
+        // Publish user activity event
+        Map<String, Object> activityData = new HashMap<>();
+        activityData.put("username", user.getUsername());
+        activityData.put("loginTime", LocalDateTime.now());
+        activityData.put("userAgent", "asset-management-api");
+        kafkaEventService.publishUserActivityEvent("UserLogin", user.getId(), activityData);
 
         LoginResponse response = new LoginResponse();
         response.setToken(jwt);
