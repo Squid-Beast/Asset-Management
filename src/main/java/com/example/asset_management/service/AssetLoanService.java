@@ -22,7 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.Map;
+
 
 @Slf4j
 @Service
@@ -47,7 +47,7 @@ public class AssetLoanService {
                 .orElseThrow(() -> new RuntimeException("Asset not found"));
 
         // Check if asset is available
-        if (asset.getStatus() != AssetStatus.AVAILABLE) {
+        if (asset.getStatus() != AssetStatus.available) {
             throw new RuntimeException("Asset is not available for assignment");
         }
 
@@ -62,26 +62,25 @@ public class AssetLoanService {
         
         // Determine if approval is needed
         LoanStatus status = daysBetween > approvalThresholdDays ? 
-                LoanStatus.PENDING_APPROVAL : LoanStatus.LOANED;
+                LoanStatus.pending_approval : LoanStatus.loaned;
 
-        AssetLoan loan = AssetLoan.builder()
-                .assetId(asset.getId())
-                .userId(user.getId())
-                .assignedById(user.getId()) // Self-assignment for now
-                .status(status)
-                .requestedAt(LocalDateTime.now())
-                .approvedAt(status == LoanStatus.LOANED ? LocalDateTime.now() : null)
-                .dueAt(request.getDueAt())
-                .build();
+        AssetLoan loan = new AssetLoan();
+        loan.setAssetId(asset.getId());
+        loan.setUserId(user.getId());
+        loan.setAssignedById(user.getId()); // Self-assignment for now
+        loan.setStatus(status);
+        loan.setRequestedAt(LocalDateTime.now());
+        loan.setApprovedAt(status == LoanStatus.loaned ? LocalDateTime.now() : null);
+        loan.setDueAt(request.getDueAt());
 
         AssetLoan savedLoan = assetLoanRepository.save(loan);
 
         // Update asset status
-        asset.setStatus(AssetStatus.LOANED);
+        asset.setStatus(AssetStatus.loaned);
         assetRepository.save(asset);
 
         // Publish event
-        if (status == LoanStatus.LOANED) {
+        if (status == LoanStatus.loaned) {
             eventService.publishAssetAssignedEvent(savedLoan);
         }
 
@@ -102,11 +101,11 @@ public class AssetLoanService {
         AssetLoan loan = assetLoanRepository.findById(loanId)
                 .orElseThrow(() -> new RuntimeException("Loan not found"));
 
-        if (loan.getStatus() != LoanStatus.PENDING_APPROVAL) {
+        if (loan.getStatus() != LoanStatus.pending_approval) {
             throw new RuntimeException("Loan is not pending approval");
         }
 
-        loan.setStatus(LoanStatus.LOANED);
+        loan.setStatus(LoanStatus.loaned);
         loan.setApprovedAt(LocalDateTime.now());
         AssetLoan savedLoan = assetLoanRepository.save(loan);
 
@@ -134,13 +133,13 @@ public class AssetLoanService {
             throw new RuntimeException("You can only return assets assigned to you");
         }
 
-        loan.setStatus(LoanStatus.RETURNED);
+        loan.setStatus(LoanStatus.returned);
         loan.setReturnedAt(LocalDateTime.now());
         loan.setDamageNote(request.getDamageNote());
         AssetLoan savedLoan = assetLoanRepository.save(loan);
 
         // Update asset status
-        asset.setStatus(AssetStatus.AVAILABLE);
+        asset.setStatus(AssetStatus.available);
         assetRepository.save(asset);
 
         // Publish event
@@ -196,20 +195,20 @@ public class AssetLoanService {
         User user = userRepository.findById(loan.getUserId()).orElse(null);
         User assignedBy = userRepository.findById(loan.getAssignedById()).orElse(null);
 
-        return AssetLoanResponse.builder()
-                .id(loan.getId())
-                .assetId(loan.getAssetId())
-                .assetTag(asset != null ? asset.getAssetTag() : "Unknown")
-                .assetName(asset != null ? asset.getName() : "Unknown")
-                .userName(user != null ? user.getFirstName() + " " + user.getLastName() : "Unknown")
-                .assignedByName(assignedBy != null ? assignedBy.getFirstName() + " " + assignedBy.getLastName() : "Unknown")
-                .status(loan.getStatus())
-                .requestedAt(loan.getRequestedAt())
-                .approvedAt(loan.getApprovedAt())
-                .dueAt(loan.getDueAt())
-                .returnedAt(loan.getReturnedAt())
-                .damageNote(loan.getDamageNote())
-                .createdAt(loan.getCreatedAt())
-                .build();
+        AssetLoanResponse response = new AssetLoanResponse();
+        response.setId(loan.getId());
+        response.setAssetId(loan.getAssetId());
+        response.setAssetTag(asset != null ? asset.getAssetTag() : "Unknown");
+        response.setAssetName(asset != null ? asset.getName() : "Unknown");
+        response.setUserName(user != null ? user.getFirstName() + " " + user.getLastName() : "Unknown");
+        response.setAssignedByName(assignedBy != null ? assignedBy.getFirstName() + " " + assignedBy.getLastName() : "Unknown");
+        response.setStatus(loan.getStatus());
+        response.setRequestedAt(loan.getRequestedAt());
+        response.setApprovedAt(loan.getApprovedAt());
+        response.setDueAt(loan.getDueAt());
+        response.setReturnedAt(loan.getReturnedAt());
+        response.setDamageNote(loan.getDamageNote());
+        response.setCreatedAt(loan.getCreatedAt());
+        return response;
     }
 }

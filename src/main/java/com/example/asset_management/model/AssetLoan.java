@@ -1,39 +1,54 @@
 package com.example.asset_management.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-
 import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity
+@Getter
+@Setter
+@Table(name = "asset_loans")
 public class AssetLoan {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "asset_id")
     private Long assetId;
+    @Column(name = "user_id")
     private Long userId;
+    @Column(name = "assigned_by_id")
     private Long assignedById;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private LoanStatus status;
+    @Column(name = "requested_at")
     private LocalDateTime requestedAt;
+    @Column(name = "approved_at")
     private LocalDateTime approvedAt;
+    @Column(name = "due_at")
     private LocalDateTime dueAt;
+    @Column(name = "returned_at")
     private LocalDateTime returnedAt;
+    @Column(name = "damage_note")
     private String damageNote;
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    // Relationships
-    private Asset asset;
-    private User user;
-    private User assignedBy;
-    
     public enum LoanStatus {
-        PENDING_APPROVAL,
-        LOANED,
-        RETURNED,
-        OVERDUE
+        pending_approval,
+        loaned,
+        returned,
+        overdue
     }
 }

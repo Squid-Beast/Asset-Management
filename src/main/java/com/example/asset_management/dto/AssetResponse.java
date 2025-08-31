@@ -1,18 +1,13 @@
 package com.example.asset_management.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-
+import lombok.Getter;
+import lombok.Setter;
 import com.example.asset_management.model.Asset.AssetStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter
+@Setter
 public class AssetResponse {
     private Long id;
     private String assetTag;

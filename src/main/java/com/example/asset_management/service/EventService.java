@@ -34,14 +34,13 @@ public class EventService {
 
             String payloadJson = objectMapper.writeValueAsString(payload);
 
-            OutboxEvent event = OutboxEvent.builder()
-                    .aggregateType("ASSET_LOAN")
-                    .aggregateId(loan.getId())
-                    .eventType("AssetAssigned")
-                    .payloadJson(payloadJson)
-                    .createdAt(LocalDateTime.now())
-                    .retryCount(0)
-                    .build();
+            OutboxEvent event = new OutboxEvent();
+            event.setAggregateType("ASSET_LOAN");
+            event.setAggregateId(loan.getId());
+            event.setEventType("AssetAssigned");
+            event.setPayloadJson(payloadJson);
+            event.setCreatedAt(LocalDateTime.now());
+            event.setRetryCount(0);
 
             outboxEventRepository.save(event);
             log.info("AssetAssigned event queued for loan ID: {}", loan.getId());
@@ -62,14 +61,13 @@ public class EventService {
 
             String payloadJson = objectMapper.writeValueAsString(payload);
 
-            OutboxEvent event = OutboxEvent.builder()
-                    .aggregateType("ASSET_LOAN")
-                    .aggregateId(loan.getId())
-                    .eventType("AssetReturned")
-                    .payloadJson(payloadJson)
-                    .createdAt(LocalDateTime.now())
-                    .retryCount(0)
-                    .build();
+            OutboxEvent event = new OutboxEvent();
+            event.setAggregateType("ASSET_LOAN");
+            event.setAggregateId(loan.getId());
+            event.setEventType("AssetReturned");
+            event.setPayloadJson(payloadJson);
+            event.setCreatedAt(LocalDateTime.now());
+            event.setRetryCount(0);
 
             outboxEventRepository.save(event);
             log.info("AssetReturned event queued for loan ID: {}", loan.getId());
@@ -89,14 +87,13 @@ public class EventService {
 
             String payloadJson = objectMapper.writeValueAsString(payload);
 
-            OutboxEvent event = OutboxEvent.builder()
-                    .aggregateType("ASSET_LOAN")
-                    .aggregateId(loan.getId())
-                    .eventType("AssetDueSoon")
-                    .payloadJson(payloadJson)
-                    .createdAt(LocalDateTime.now())
-                    .retryCount(0)
-                    .build();
+            OutboxEvent event = new OutboxEvent();
+            event.setAggregateType("ASSET_LOAN");
+            event.setAggregateId(loan.getId());
+            event.setEventType("AssetDueSoon");
+            event.setPayloadJson(payloadJson);
+            event.setCreatedAt(LocalDateTime.now());
+            event.setRetryCount(0);
 
             outboxEventRepository.save(event);
             log.info("AssetDueSoon event queued for loan ID: {}", loan.getId());
@@ -116,14 +113,13 @@ public class EventService {
 
             String payloadJson = objectMapper.writeValueAsString(payload);
 
-            OutboxEvent event = OutboxEvent.builder()
-                    .aggregateType("ASSET_LOAN")
-                    .aggregateId(loan.getId())
-                    .eventType("AssetOverdue")
-                    .payloadJson(payloadJson)
-                    .createdAt(LocalDateTime.now())
-                    .retryCount(0)
-                    .build();
+            OutboxEvent event = new OutboxEvent();
+            event.setAggregateType("ASSET_LOAN");
+            event.setAggregateId(loan.getId());
+            event.setEventType("AssetOverdue");
+            event.setPayloadJson(payloadJson);
+            event.setCreatedAt(LocalDateTime.now());
+            event.setRetryCount(0);
 
             outboxEventRepository.save(event);
             log.info("AssetOverdue event queued for loan ID: {}", loan.getId());

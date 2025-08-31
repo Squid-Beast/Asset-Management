@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -107,7 +107,7 @@ public class AssetService {
                 .orElseThrow(() -> new AssetNotFoundException(id));
 
         // Check if asset is currently loaned
-        if (asset.getStatus() == AssetStatus.LOANED) {
+        if (asset.getStatus() == AssetStatus.loaned) {
             throw new RuntimeException("Cannot delete asset that is currently loaned");
         }
 
@@ -171,17 +171,17 @@ public class AssetService {
     private AssetResponse mapToAssetResponse(Asset asset, Map<Long, String> categoryMap) {
         String categoryName = categoryMap.getOrDefault(asset.getCategoryId(), "Unknown");
 
-        return AssetResponse.builder()
-                .id(asset.getId())
-                .assetTag(asset.getAssetTag())
-                .name(asset.getName())
-                .description(asset.getDescription())
-                .categoryName(categoryName)
-                .status(asset.getStatus())
-                .purchaseDate(asset.getPurchaseDate())
-                .warrantyExpiry(asset.getWarrantyExpiry())
-                .notes(asset.getNotes())
-                .createdAt(asset.getCreatedAt())
-                .build();
+        AssetResponse response = new AssetResponse();
+        response.setId(asset.getId());
+        response.setAssetTag(asset.getAssetTag());
+        response.setName(asset.getName());
+        response.setDescription(asset.getDescription());
+        response.setCategoryName(categoryName);
+        response.setStatus(asset.getStatus());
+        response.setPurchaseDate(asset.getPurchaseDate());
+        response.setWarrantyExpiry(asset.getWarrantyExpiry());
+        response.setNotes(asset.getNotes());
+        response.setCreatedAt(asset.getCreatedAt());
+        return response;
     }
 }

@@ -1,17 +1,12 @@
 package com.example.asset_management.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-
+import lombok.Getter;
+import lombok.Setter;
 import com.example.asset_management.model.AssetLoan.LoanStatus;
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter
+@Setter
 public class AssetLoanResponse {
     private Long id;
     private Long assetId;

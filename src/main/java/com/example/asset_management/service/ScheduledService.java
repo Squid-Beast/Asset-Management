@@ -51,7 +51,7 @@ public class ScheduledService {
         for (AssetLoan loan : overdueLoans) {
             try {
                 // Update loan status to overdue
-                loan.setStatus(LoanStatus.OVERDUE);
+                loan.setStatus(LoanStatus.overdue);
                 assetLoanRepository.save(loan);
                 
                 eventService.publishAssetOverdueEvent(loan);

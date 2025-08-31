@@ -1,8 +1,8 @@
 package com.example.asset_management.repository;
 
 import com.example.asset_management.model.User;
-import org.springframework.data.jdbc.repository.query.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -10,41 +10,33 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
     
-    @Query("SELECT * FROM users WHERE username = :username")
+    @Query("SELECT u FROM User u WHERE u.username = :username")
     Optional<User> findByUsername(@Param("username") String username);
     
-    @Query("SELECT * FROM users WHERE email = :email")
+    @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmail(@Param("email") String email);
     
-    @Query("SELECT * FROM users WHERE username = :username AND is_active = true")
+    @Query("SELECT u FROM User u WHERE u.username = :username AND u.isActive = true")
     Optional<User> findActiveByUsername(@Param("username") String username);
     
-    @Query("SELECT * FROM users WHERE manager_id = :managerId")
+    @Query("SELECT u FROM User u WHERE u.managerId = :managerId")
     List<User> findSubordinatesByManagerId(@Param("managerId") Long managerId);
     
-    @Query("SELECT * FROM users WHERE role_id = :roleId")
+    @Query("SELECT u FROM User u WHERE u.roleId = :roleId")
     List<User> findByRoleId(@Param("roleId") Long roleId);
     
-    @Query("SELECT * FROM users WHERE department_id = :departmentId")
+    @Query("SELECT u FROM User u WHERE u.departmentId = :departmentId")
     List<User> findByDepartmentId(@Param("departmentId") Long departmentId);
     
-    @Query("SELECT * FROM users WHERE is_active = true")
+    @Query("SELECT u FROM User u WHERE u.isActive = true")
     List<User> findAllActiveUsers();
     
-    @Query("SELECT * FROM users WHERE id = :id AND is_active = true")
+    @Query("SELECT u FROM User u WHERE u.id = :id AND u.isActive = true")
     Optional<User> findActiveById(@Param("id") Long id);
     
-    @Query("SELECT EXISTS(SELECT 1 FROM users WHERE username = :username)")
-    boolean existsByUsername(@Param("username") String username);
+    boolean existsByUsername(String username);
     
-    @Query("SELECT EXISTS(SELECT 1 FROM users WHERE email = :email)")
-    boolean existsByEmail(@Param("email") String email);
-    
-    @Query("SELECT * FROM users WHERE id = :id")
-    Optional<User> findById(@Param("id") Long id);
-    
-    @Query("SELECT * FROM users WHERE id IN (:ids)")
-    List<User> findAllById(@Param("ids") List<Long> ids);
+    boolean existsByEmail(String email);
 }

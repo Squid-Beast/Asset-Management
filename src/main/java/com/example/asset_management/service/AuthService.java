@@ -42,18 +42,31 @@ public class AuthService {
         User user = userRepository.findActiveByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Get the role name from roleId
+        String roleName = "USER"; // Default role
+        if (user.getRoleId() != null) {
+            try {
+                Role role = roleRepository.findById(user.getRoleId()).orElse(null);
+                if (role != null) {
+                    roleName = role.getName();
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch role for user: {}", loginRequest.getUsername(), e);
+            }
+        }
+
         // Update last login
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
 
-        return LoginResponse.builder()
-                .token(jwt)
-                .username(user.getUsername())
-                .role(user.getRole().getName())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .userId(user.getId())
-                .build();
+        LoginResponse response = new LoginResponse();
+        response.setToken(jwt);
+        response.setUsername(user.getUsername());
+        response.setRole(roleName);
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setUserId(user.getId());
+        return response;
     }
 
     @Transactional
@@ -89,7 +102,17 @@ public class AuthService {
 
     public boolean hasRole(String roleName) {
         return getCurrentUser()
-                .map(user -> user.getRole().getName().equals(roleName))
+                .map(user -> {
+                    if (user.getRoleId() != null) {
+                        try {
+                            Role role = roleRepository.findById(user.getRoleId()).orElse(null);
+                            return role != null && role.getName().equals(roleName);
+                        } catch (Exception e) {
+                            log.warn("Could not fetch role for user: {}", user.getUsername(), e);
+                        }
+                    }
+                    return false;
+                })
                 .orElse(false);
     }
 
