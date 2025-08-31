@@ -5,16 +5,23 @@ INSERT INTO users (username, email, first_name, last_name, password_hash, role_i
  (SELECT id FROM departments WHERE name = 'IT Department'), 
  NULL);
 
+-- Set variables for user IDs
+SET @admin_id = (SELECT id FROM users WHERE username = 'adm01');
+
 -- Insert Managers (reporting to Super Admin)
 INSERT INTO users (username, email, first_name, last_name, password_hash, role_id, department_id, manager_id) VALUES
 ('mgr01', 'manager1@company.com', 'John', 'Manager', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 
  (SELECT id FROM roles WHERE name = 'MANAGER'), 
  (SELECT id FROM departments WHERE name = 'IT Department'), 
- (SELECT id FROM users WHERE username = 'adm01')),
+ @admin_id),
 ('mgr02', 'manager2@company.com', 'Sarah', 'Director', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 
  (SELECT id FROM roles WHERE name = 'MANAGER'), 
  (SELECT id FROM departments WHERE name = 'HR Department'), 
- (SELECT id FROM users WHERE username = 'adm01'));
+ @admin_id);
+
+-- Set variables for manager IDs
+SET @manager1_id = (SELECT id FROM users WHERE username = 'mgr01');
+SET @manager2_id = (SELECT id FROM users WHERE username = 'mgr02');
 
 -- Insert Employees (reporting to respective managers)
 INSERT INTO users (username, email, first_name, last_name, password_hash, role_id, department_id, manager_id) VALUES
@@ -22,24 +29,24 @@ INSERT INTO users (username, email, first_name, last_name, password_hash, role_i
 ('emp01', 'employee1@company.com', 'Alice', 'Johnson', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 
  (SELECT id FROM roles WHERE name = 'EMPLOYEE'), 
  (SELECT id FROM departments WHERE name = 'IT Department'), 
- (SELECT id FROM users WHERE username = 'mgr01')),
+ @manager1_id),
 ('emp02', 'employee2@company.com', 'Bob', 'Smith', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 
  (SELECT id FROM roles WHERE name = 'EMPLOYEE'), 
  (SELECT id FROM departments WHERE name = 'IT Department'), 
- (SELECT id FROM users WHERE username = 'mgr01')),
+ @manager1_id),
 -- Employees under Manager 2 (HR Department)
 ('emp03', 'employee3@company.com', 'Charlie', 'Brown', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 
  (SELECT id FROM roles WHERE name = 'EMPLOYEE'), 
  (SELECT id FROM departments WHERE name = 'HR Department'), 
- (SELECT id FROM users WHERE username = 'mgr02')),
+ @manager2_id),
 ('emp04', 'employee4@company.com', 'Diana', 'Wilson', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 
  (SELECT id FROM roles WHERE name = 'EMPLOYEE'), 
  (SELECT id FROM departments WHERE name = 'HR Department'), 
- (SELECT id FROM users WHERE username = 'mgr02')),
+ @manager2_id),
 ('emp05', 'employee5@company.com', 'Eve', 'Davis', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 
  (SELECT id FROM roles WHERE name = 'EMPLOYEE'), 
  (SELECT id FROM departments WHERE name = 'Finance Department'), 
- (SELECT id FROM users WHERE username = 'mgr02'));
+ @manager2_id);
 
 -- Insert sample assets
 INSERT INTO assets (asset_tag, name, description, category_id, status, purchase_date, warranty_expiry, notes) VALUES
@@ -98,42 +105,56 @@ INSERT INTO assets (asset_tag, name, description, category_id, status, purchase_
  (SELECT id FROM asset_categories WHERE name = 'Peripheral'), 'available', '2025-07-01', '2027-07-01', 'Available for assignment'),
 
 -- Mobile Devices
-('MOB001', 'iPad Pro 12.9"', 'Apple iPad Pro with Apple Pencil', 
- (SELECT id FROM asset_categories WHERE name = 'Mobile Device'), 'available', '2025-08-20', '2028-08-20', 'For presentations'),
-('MOB002', 'Samsung Galaxy Tab S8', 'Android tablet for testing', 
- (SELECT id FROM asset_categories WHERE name = 'Mobile Device'), 'available', '2025-08-20', '2028-08-20', 'For development testing'),
-('MOB003', 'iPhone 14 Pro', 'Company phone for business use', 
- (SELECT id FROM asset_categories WHERE name = 'Mobile Device'), 'loaned', '2025-08-20', '2028-08-20', 'Currently assigned');
+('MOB001', 'iPad Pro 12.9"', 'Apple iPad Pro with M2 chip, 256GB storage', 
+ (SELECT id FROM asset_categories WHERE name = 'Mobile Device'), 'available', '2025-08-01', '2028-08-01', 'For presentations'),
+('MOB002', 'Samsung Galaxy Tab S9', 'Android tablet with 128GB storage', 
+ (SELECT id FROM asset_categories WHERE name = 'Mobile Device'), 'available', '2025-08-01', '2028-08-01', 'For field work'),
+('MOB003', 'iPhone 15 Pro', 'Apple iPhone 15 Pro, 256GB storage', 
+ (SELECT id FROM asset_categories WHERE name = 'Mobile Device'), 'loaned', '2025-08-01', '2028-08-01', 'Currently assigned'),
+('MOB004', 'Samsung Galaxy S24', 'Android smartphone, 128GB storage', 
+ (SELECT id FROM asset_categories WHERE name = 'Mobile Device'), 'available', '2025-08-01', '2028-08-01', 'Available for assignment');
 
--- Insert some sample asset loans (assigning badges to users)
-INSERT INTO asset_loans (asset_id, user_id, assigned_by_id, status, requested_at, approved_at, due_at, returned_at) VALUES
--- Badge assignments (permanent)
-((SELECT id FROM assets WHERE asset_tag = 'BAD001'), (SELECT id FROM users WHERE username = 'emp01'), (SELECT id FROM users WHERE username = 'mgr01'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2027-01-10 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'BAD002'), (SELECT id FROM users WHERE username = 'emp02'), (SELECT id FROM users WHERE username = 'mgr01'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2027-01-10 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'BAD003'), (SELECT id FROM users WHERE username = 'emp03'), (SELECT id FROM users WHERE username = 'mgr02'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2027-01-10 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'BAD004'), (SELECT id FROM users WHERE username = 'emp04'), (SELECT id FROM users WHERE username = 'mgr02'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2027-01-10 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'BAD005'), (SELECT id FROM users WHERE username = 'emp05'), (SELECT id FROM users WHERE username = 'mgr02'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2027-01-10 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'BAD006'), (SELECT id FROM users WHERE username = 'mgr01'), (SELECT id FROM users WHERE username = 'adm01'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2027-01-10 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'BAD007'), (SELECT id FROM users WHERE username = 'mgr02'), (SELECT id FROM users WHERE username = 'adm01'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2027-01-10 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'BAD008'), (SELECT id FROM users WHERE username = 'adm01'), (SELECT id FROM users WHERE username = 'adm01'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2027-01-10 17:00:00', NULL),
+-- Set variables for user and asset IDs for loan creation
+SET @alice_id = (SELECT id FROM users WHERE username = 'emp01');
+SET @bob_id = (SELECT id FROM users WHERE username = 'emp02');
+SET @charlie_id = (SELECT id FROM users WHERE username = 'emp03');
+SET @diana_id = (SELECT id FROM users WHERE username = 'emp04');
+SET @eve_id = (SELECT id FROM users WHERE username = 'emp05');
+SET @john_manager_id = (SELECT id FROM users WHERE username = 'mgr01');
+SET @sarah_manager_id = (SELECT id FROM users WHERE username = 'mgr02');
+SET @admin_id = (SELECT id FROM users WHERE username = 'adm01');
 
--- Some current laptop assignments (with upcoming due dates)
-((SELECT id FROM assets WHERE asset_tag = 'LAP004'), (SELECT id FROM users WHERE username = 'emp01'), (SELECT id FROM users WHERE username = 'mgr01'), 'loaned', '2025-01-15 10:00:00', '2025-01-15 10:00:00', '2025-12-31 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'MON003'), (SELECT id FROM users WHERE username = 'emp02'), (SELECT id FROM users WHERE username = 'mgr01'), 'loaned', '2025-01-20 14:00:00', '2025-01-20 14:00:00', '2025-12-31 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'PER003'), (SELECT id FROM users WHERE username = 'emp03'), (SELECT id FROM users WHERE username = 'mgr02'), 'loaned', '2025-02-01 11:00:00', '2025-02-01 11:00:00', '2025-12-31 17:00:00', NULL),
-((SELECT id FROM assets WHERE asset_tag = 'MOB003'), (SELECT id FROM users WHERE username = 'mgr01'), (SELECT id FROM users WHERE username = 'adm01'), 'loaned', '2025-01-10 09:00:00', '2025-01-10 09:00:00', '2025-12-31 17:00:00', NULL);
+SET @lap001_id = (SELECT id FROM assets WHERE asset_tag = 'LAP001');
+SET @lap004_id = (SELECT id FROM assets WHERE asset_tag = 'LAP004');
+SET @mon003_id = (SELECT id FROM assets WHERE asset_tag = 'MON003');
+SET @per003_id = (SELECT id FROM assets WHERE asset_tag = 'PER003');
+SET @mob003_id = (SELECT id FROM assets WHERE asset_tag = 'MOB003');
 
--- Insert some calendar events for due dates
+-- Insert sample asset loans
+INSERT INTO asset_loans (asset_id, user_id, assigned_by_id, status, requested_at, approved_at, due_at) VALUES
+-- Active loans
+(@lap004_id, @alice_id, @john_manager_id, 'loaned', '2025-01-15 09:00:00', '2025-01-15 09:30:00', '2025-02-15 17:00:00'),
+(@mon003_id, @bob_id, @john_manager_id, 'loaned', '2025-01-20 10:00:00', '2025-01-20 10:15:00', '2025-02-20 17:00:00'),
+(@per003_id, @charlie_id, @sarah_manager_id, 'loaned', '2025-01-25 11:00:00', '2025-01-25 11:20:00', '2025-02-25 17:00:00'),
+(@mob003_id, @diana_id, @sarah_manager_id, 'loaned', '2025-01-30 14:00:00', '2025-01-30 14:10:00', '2025-02-28 17:00:00'),
+
+-- Pending approval (long-term loans)
+(@lap001_id, @eve_id, @eve_id, 'pending_approval', '2025-02-01 15:00:00', NULL, '2025-03-15 17:00:00');
+
+-- Insert calendar events for due dates
 INSERT INTO calendar_events (title, description, user_id, asset_loan_id, event_type, start_at, end_at, status) VALUES
-('Asset Due: LAP004', 'Lenovo ThinkPad X1 is due for return', 
- (SELECT id FROM users WHERE username = 'emp01'), 
- (SELECT id FROM asset_loans WHERE asset_id = (SELECT id FROM assets WHERE asset_tag = 'LAP004')), 
- 'asset_due', '2025-12-31 17:00:00', '2025-12-31 17:00:00', 'active'),
-('Asset Due: MON003', 'LG 32" Curved Monitor is due for return', 
- (SELECT id FROM users WHERE username = 'emp02'), 
- (SELECT id FROM asset_loans WHERE asset_id = (SELECT id FROM assets WHERE asset_tag = 'MON003')), 
- 'asset_due', '2025-12-31 17:00:00', '2025-12-31 17:00:00', 'active'),
-('Asset Due: PER003', 'Apple Magic Mouse is due for return', 
- (SELECT id FROM users WHERE username = 'emp03'), 
- (SELECT id FROM asset_loans WHERE asset_id = (SELECT id FROM assets WHERE asset_tag = 'PER003')), 
- 'asset_due', '2025-12-31 17:00:00', '2025-12-31 17:00:00', 'active');
+('Asset Due: LAP004 - Dell Latitude 5520', 'Alice Johnson needs to return Dell Latitude 5520', @alice_id, 
+ (SELECT id FROM asset_loans WHERE asset_id = @lap004_id AND user_id = @alice_id), 'asset_due', 
+ '2025-02-15 17:00:00', '2025-02-15 18:00:00', 'active'),
+
+('Asset Due: MON003 - LG 32" Curved Monitor', 'Bob Smith needs to return LG 32" Curved Monitor', @bob_id,
+ (SELECT id FROM asset_loans WHERE asset_id = @mon003_id AND user_id = @bob_id), 'asset_due',
+ '2025-02-20 17:00:00', '2025-02-20 18:00:00', 'active'),
+
+('Asset Due: PER003 - Apple Magic Mouse', 'Charlie Brown needs to return Apple Magic Mouse', @charlie_id,
+ (SELECT id FROM asset_loans WHERE asset_id = @per003_id AND user_id = @charlie_id), 'asset_due',
+ '2025-02-25 17:00:00', '2025-02-25 18:00:00', 'active'),
+
+('Asset Due: MOB003 - iPhone 15 Pro', 'Diana Wilson needs to return iPhone 15 Pro', @diana_id,
+ (SELECT id FROM asset_loans WHERE asset_id = @mob003_id AND user_id = @diana_id), 'asset_due',
+ '2025-02-28 17:00:00', '2025-02-28 18:00:00', 'active');
