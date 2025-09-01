@@ -249,4 +249,35 @@ public class KafkaEventService {
         data.put("daysPastDue", java.time.temporal.ChronoUnit.DAYS.between(loan.getDueAt(), LocalDateTime.now()));
         return data;
     }
+
+    public void publishAssetRejectedEvent(AssetLoan loan) {
+        try {
+            KafkaEventPayload eventPayload = createEventPayload(
+                "AssetRejected", 
+                "ASSET_LOAN", 
+                loan.getId(),
+                createAssetRejectedData(loan)
+            );
+
+            publishToTopic(ASSETS_EVENTS_TOPIC, eventPayload);
+            publishToTopic(REALTIME_UPDATES_TOPIC, eventPayload);
+            
+            publishNotificationEvent(loan, "AssetRejected");
+            
+            log.info("AssetRejected event published for loan ID: {}", loan.getId());
+            
+        } catch (Exception e) {
+            log.error("Failed to publish AssetRejected event for loan ID: {}", loan.getId(), e);
+        }
+    }
+
+    private Map<String, Object> createAssetRejectedData(AssetLoan loan) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("loanId", loan.getId());
+        data.put("assetId", loan.getAssetId());
+        data.put("userId", loan.getUserId());
+        data.put("rejectedAt", LocalDateTime.now());
+        data.put("status", loan.getStatus().toString());
+        return data;
+    }
 }

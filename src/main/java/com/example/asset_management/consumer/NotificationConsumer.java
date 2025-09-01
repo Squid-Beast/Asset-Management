@@ -9,6 +9,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,7 @@ public class NotificationConsumer {
     @KafkaListener(topics = "notifications.email", groupId = "notification-email-processor")
     public void handleEmailNotification(
         @Payload String message,
-        @Header Map<String, Object> headers,
+        @Headers Map<String, Object> headers,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         Acknowledgment acknowledgment
     ) {
@@ -49,7 +50,7 @@ public class NotificationConsumer {
     @KafkaListener(topics = "notifications.push", groupId = "notification-push-processor")
     public void handlePushNotification(
         @Payload String message,
-        @Header Map<String, Object> headers,
+        @Headers Map<String, Object> headers,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         Acknowledgment acknowledgment
     ) {
@@ -73,7 +74,7 @@ public class NotificationConsumer {
     @KafkaListener(topics = "notifications.sms", groupId = "notification-sms-processor")
     public void handleSmsNotification(
         @Payload String message,
-        @Header Map<String, Object> headers,
+        @Headers Map<String, Object> headers,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         Acknowledgment acknowledgment
     ) {

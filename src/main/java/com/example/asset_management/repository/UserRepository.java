@@ -36,7 +36,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.id = :id AND u.isActive = true")
     Optional<User> findActiveById(@Param("id") Long id);
     
+    @Query("SELECT u FROM User u JOIN Role r ON u.roleId = r.id WHERE r.name = :roleName AND u.isActive = true")
+    List<User> findByRoleName(@Param("roleName") String roleName);
+    
     boolean existsByUsername(String username);
     
     boolean existsByEmail(String email);
+    
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")
+    long countActiveUsers();
+    
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = false")
+    long countInactiveUsers();
 }

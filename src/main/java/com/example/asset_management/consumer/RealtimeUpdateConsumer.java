@@ -8,6 +8,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +24,7 @@ public class RealtimeUpdateConsumer {
     @KafkaListener(topics = "realtime.updates", groupId = "realtime-dashboard-updates")
     public void handleRealtimeUpdate(
         @Payload String message,
-        @Header Map<String, Object> headers,
+        @Headers Map<String, Object> headers,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         Acknowledgment acknowledgment
     ) {
@@ -48,7 +49,7 @@ public class RealtimeUpdateConsumer {
     @KafkaListener(topics = "realtime.status", groupId = "realtime-status-updates")
     public void handleRealtimeStatus(
         @Payload String message,
-        @Header Map<String, Object> headers,
+        @Headers Map<String, Object> headers,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         Acknowledgment acknowledgment
     ) {

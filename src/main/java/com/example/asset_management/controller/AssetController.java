@@ -4,6 +4,7 @@ import com.example.asset_management.dto.ApiResponse;
 import com.example.asset_management.dto.AssetAssignmentRequest;
 import com.example.asset_management.dto.AssetResponse;
 import com.example.asset_management.dto.AssetReturnRequest;
+import com.example.asset_management.dto.CreateAssetRequest;
 import com.example.asset_management.exception.AssetNotFoundException;
 import com.example.asset_management.model.Asset;
 import com.example.asset_management.model.Asset.AssetStatus;
@@ -16,16 +17,29 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/assets")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AssetController {
 
     private final AssetService assetService;
 
     @GetMapping
+    public ResponseEntity<ApiResponse<List<AssetResponse>>> getAllAssets() {
+        try {
+            List<AssetResponse> assets = assetService.getAllAssets();
+            return ResponseEntity.ok(ApiResponse.success(assets));
+        } catch (Exception e) {
+            log.error("Failed to get all assets", e);
+            return ResponseEntity.internalServerError().body(ApiResponse.error("Failed to retrieve assets"));
+        }
+    }
+
+    @GetMapping("/available")
     public ResponseEntity<ApiResponse<List<AssetResponse>>> getAvailableAssets() {
         try {
             List<AssetResponse> assets = assetService.getAvailableAssets();
@@ -36,16 +50,7 @@ public class AssetController {
         }
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<AssetResponse>>> getAllAssets() {
-        try {
-            List<AssetResponse> assets = assetService.getAllAssets();
-            return ResponseEntity.ok(ApiResponse.success(assets));
-        } catch (Exception e) {
-            log.error("Failed to get all assets", e);
-            return ResponseEntity.internalServerError().body(ApiResponse.error("Failed to retrieve assets"));
-        }
-    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<AssetResponse>> getAssetById(@PathVariable Long id) {
@@ -73,12 +78,23 @@ public class AssetController {
         }
     }
 
+    @GetMapping("/statistics")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAssetStatistics() {
+        try {
+            Map<String, Object> statistics = assetService.getAssetStatistics();
+            return ResponseEntity.ok(ApiResponse.success("Asset statistics retrieved successfully", statistics));
+        } catch (Exception e) {
+            log.error("Failed to get asset statistics", e);
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<AssetResponse>> createAsset(
-            @Valid @RequestBody Asset asset,
+            @Valid @RequestBody CreateAssetRequest request,
             Authentication authentication) {
         try {
-            AssetResponse createdAsset = assetService.createAsset(asset);
+            AssetResponse createdAsset = assetService.createAssetFromRequest(request);
             return ResponseEntity.ok(ApiResponse.success("Asset created successfully", createdAsset));
         } catch (Exception e) {
             log.error("Failed to create asset", e);
@@ -89,10 +105,10 @@ public class AssetController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<AssetResponse>> updateAsset(
             @PathVariable Long id,
-            @Valid @RequestBody Asset asset,
+            @Valid @RequestBody CreateAssetRequest request,
             Authentication authentication) {
         try {
-            AssetResponse updatedAsset = assetService.updateAsset(id, asset);
+            AssetResponse updatedAsset = assetService.updateAssetFromRequest(id, request);
             return ResponseEntity.ok(ApiResponse.success("Asset updated successfully", updatedAsset));
         } catch (AssetNotFoundException e) {
             return ResponseEntity.notFound().build();

@@ -127,4 +127,30 @@ public class EventService {
             log.error("Failed to publish AssetOverdue event for loan ID: {}", loan.getId(), e);
         }
     }
+
+    @Transactional
+    public void publishAssetRejectedEvent(AssetLoan loan) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("loanId", loan.getId());
+            payload.put("assetId", loan.getAssetId());
+            payload.put("userId", loan.getUserId());
+            payload.put("rejectedAt", LocalDateTime.now());
+
+            String payloadJson = objectMapper.writeValueAsString(payload);
+
+            OutboxEvent event = new OutboxEvent();
+            event.setAggregateType("ASSET_LOAN");
+            event.setAggregateId(loan.getId());
+            event.setEventType("AssetRejected");
+            event.setPayloadJson(payloadJson);
+            event.setCreatedAt(LocalDateTime.now());
+            event.setRetryCount(0);
+
+            outboxEventRepository.save(event);
+            log.info("AssetRejected event queued for loan ID: {}", loan.getId());
+        } catch (Exception e) {
+            log.error("Failed to publish AssetRejected event for loan ID: {}", loan.getId(), e);
+        }
+    }
 }

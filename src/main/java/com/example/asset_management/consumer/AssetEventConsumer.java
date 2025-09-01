@@ -9,6 +9,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,7 @@ public class AssetEventConsumer {
     @KafkaListener(topics = "assets.events", groupId = "asset-management-group")
     public void handleAssetEvent(
         @Payload String message,
-        @Header Map<String, Object> headers,
+        @Headers Map<String, Object> headers,
         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
         @Header(KafkaHeaders.OFFSET) long offset,
@@ -69,7 +70,7 @@ public class AssetEventConsumer {
     @KafkaListener(topics = "assets.dlq", groupId = "asset-management-dlq-processor")
     public void handleFailedAssetEvent(
         @Payload String message,
-        @Header Map<String, Object> headers,
+        @Headers Map<String, Object> headers,
         Acknowledgment acknowledgment
     ) {
         try {

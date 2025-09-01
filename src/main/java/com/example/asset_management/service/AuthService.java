@@ -3,6 +3,7 @@ package com.example.asset_management.service;
 import com.example.asset_management.dto.ChangePasswordRequest;
 import com.example.asset_management.dto.LoginRequest;
 import com.example.asset_management.dto.LoginResponse;
+import com.example.asset_management.dto.UserResponse;
 import com.example.asset_management.model.Role;
 import com.example.asset_management.model.User;
 import com.example.asset_management.repository.RoleRepository;
@@ -132,5 +133,57 @@ public class AuthService {
 
     public boolean isSuperAdmin() {
         return hasRole("SUPER_ADMIN");
+    }
+
+    public UserResponse getCurrentUserProfile(String username) {
+        try {
+            log.info("Getting user profile for username: {}", username);
+            
+            User user = userRepository.findActiveByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            log.info("Found user: {} {} (ID: {})", user.getFirstName(), user.getLastName(), user.getId());
+
+            UserResponse response = new UserResponse();
+            response.setId(user.getId());
+            response.setUsername(user.getUsername());
+            response.setFirstName(user.getFirstName());
+            response.setLastName(user.getLastName());
+            response.setEmail(user.getEmail());
+            response.setActive(user.getIsActive() != null ? user.getIsActive() : false);
+            response.setCreatedAt(user.getCreatedAt());
+            response.setUpdatedAt(user.getUpdatedAt());
+            response.setManagerId(user.getManagerId());
+            
+            // Get role name
+            try {
+                if (user.getRoleId() != null) {
+                    Role role = roleRepository.findById(user.getRoleId()).orElse(null);
+                    response.setRole(role != null ? role.getName() : "EMPLOYEE");
+                } else {
+                    response.setRole("EMPLOYEE");
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch role for user: {}, setting default role", username, e);
+                response.setRole("EMPLOYEE");
+            }
+            
+            // Get manager name if managerId exists
+            try {
+                if (user.getManagerId() != null) {
+                    userRepository.findById(user.getManagerId())
+                            .ifPresent(manager -> response.setManagerName(
+                                    manager.getFirstName() + " " + manager.getLastName()));
+                }
+            } catch (Exception e) {
+                log.warn("Could not fetch manager for user: {}", username, e);
+            }
+            
+            log.info("Successfully created user profile response for: {}", username);
+            return response;
+        } catch (Exception e) {
+            log.error("Error getting user profile for username: {}", username, e);
+            throw new RuntimeException("Failed to get user profile: " + e.getMessage(), e);
+        }
     }
 }

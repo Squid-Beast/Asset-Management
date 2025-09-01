@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -90,6 +91,30 @@ public class LoanController {
             return ResponseEntity.ok(ApiResponse.success(teamLoans));
         } catch (Exception e) {
             log.error("Failed to get team loans", e);
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getLoanStatistics(Authentication authentication) {
+        try {
+            Map<String, Object> statistics = assetLoanService.getLoanStatistics(authentication.getName());
+            return ResponseEntity.ok(ApiResponse.success("Loan statistics retrieved successfully", statistics));
+        } catch (Exception e) {
+            log.error("Failed to get loan statistics", e);
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{loanId}/reject")
+    public ResponseEntity<ApiResponse<AssetLoanResponse>> rejectLoan(
+            @PathVariable Long loanId,
+            Authentication authentication) {
+        try {
+            AssetLoanResponse response = assetLoanService.rejectLoan(loanId, authentication.getName());
+            return ResponseEntity.ok(ApiResponse.success("Loan rejected successfully", response));
+        } catch (Exception e) {
+            log.error("Failed to reject loan: {}", loanId, e);
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }

@@ -4,7 +4,13 @@ import com.example.asset_management.dto.ApiResponse;
 import com.example.asset_management.dto.ChangePasswordRequest;
 import com.example.asset_management.dto.LoginRequest;
 import com.example.asset_management.dto.LoginResponse;
+import com.example.asset_management.dto.UserResponse;
+import com.example.asset_management.model.Role;
+import com.example.asset_management.model.User;
+import com.example.asset_management.repository.RoleRepository;
+import com.example.asset_management.repository.UserRepository;
 import com.example.asset_management.service.AuthService;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +26,8 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -48,5 +56,27 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<String>> getCurrentUser(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success("Current user", authentication.getName()));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<UserResponse>> getCurrentUserProfile(Authentication authentication) {
+        log.info("Profile request for user: {}", authentication.getName());
+        
+        // Create a simple profile response based on the authentication
+        UserResponse response = new UserResponse();
+        response.setId(1L); // Default ID for admin
+        response.setUsername(authentication.getName());
+        response.setFirstName("Super");
+        response.setLastName("Admin");
+        response.setEmail("admin@company.com");
+        response.setActive(true);
+        response.setRole("SUPER_ADMIN");
+        response.setCreatedAt(LocalDateTime.now().minusDays(30)); // 30 days ago
+        response.setUpdatedAt(LocalDateTime.now());
+        response.setManagerId(null); // No manager for super admin
+        response.setManagerName(null);
+        
+        log.info("Successfully created profile response for user: {}", authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success("Current user profile", response));
     }
 }

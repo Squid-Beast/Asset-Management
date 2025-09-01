@@ -31,5 +31,11 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     @Query("SELECT a FROM Asset a ORDER BY a.assetTag")
     List<Asset> findAllOrderedByAssetTag();
     
+    @Query("SELECT COUNT(a) FROM Asset a WHERE a.status = :status")
+    long countByStatus(@Param("status") AssetStatus status);
+    
+    @Query("SELECT COUNT(a) FROM Asset a WHERE a.categoryId = :categoryId")
+    long countByCategoryId(@Param("categoryId") Long categoryId);
+    
     boolean existsByAssetTag(String assetTag);
 }

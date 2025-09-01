@@ -16,4 +16,6 @@ public interface AssetCategoryRepository extends JpaRepository<AssetCategory, Lo
     
     @Query("SELECT ac FROM AssetCategory ac ORDER BY ac.name")
     List<AssetCategory> findAllOrderedByName();
+    
+    boolean existsByName(String name);
 }

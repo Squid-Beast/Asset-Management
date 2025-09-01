@@ -49,6 +49,7 @@ public class AssetLoan {
         pending_approval,
         loaned,
         returned,
+        rejected,
         overdue
     }
 }
