@@ -101,6 +101,7 @@ public class AssetService {
         asset.setNotes(request.getNotes());
         
         // Set default values
+        asset.setStatus(AssetStatus.available);
         asset.setCreatedAt(LocalDateTime.now());
         
         Asset savedAsset = assetRepository.save(asset);

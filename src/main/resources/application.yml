@@ -44,7 +44,7 @@ spring:
 
 # JWT Configuration
 jwt:
-  secret: 46N/1J3y0uxfj7qg8IWxPGODzILeGQE8/2QlN7vMjtQWKKK9NwWLINm6F65EfQ5y7Sj+u1VPSRTj8qvtCZjinqdxmYLnkK6nn5Di0OvQ4Y2S2WhF1+m6A2sACpDH90MfH3euucXl2pBWIQFSIrRgshIYcedRvNwFmFze+UNsiW8ehMKheB4B8ERIfYCC0yY/yGgL2wXEEQZ/3v8g+2emfc6H2a6lvHj8w0v7wxs/7CgE6iyFafYPl+cVgmelF802Lemjka8teqF8SwqUFK76NDfHZV5rjUxyvZrms+kMmkOJGB61srGya2NazQMlXc+YDOo0DX1O+xgsCcpZUxJ+OA==
+  secret: 46N/1J3y0uxfj7qg8IWxPGODzILeGQE8/2QlN7vMjtQWKKK9NwWLINm6F65EfQ5y7Sj+u1VPSRTj8qvtCZjinqdxmYLnkK6nn5Di0OvQ4Y2S2WhF1+m6A2sACpDH90MfH3euucXl2pBWIQFSIrRgshIYcedRvNwFmFze+UNsiW8ehMKheB4B8ERIfYCC0yY/yGgL2wXEEQZ/3v8g+2emfc6H2a6lvHj8w0v7wxs/7CgE6iyFafYPl+cVgmelF802Lemjka8teqF8SwqUFK76NDfHZV5rjUxyvZrms+kMmkOJGB61srGya2NazQMlXc+YDOoDX1O+xgsCcpZUxJ+OA==
   expiration: 86400000
 
 # Server Configuration
@@ -68,3 +68,40 @@ app:
   notification:
     max-retry-attempts: 3
     retry-delay-seconds: 60
+
+---
+# Docker Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: docker
+  
+  # Database Configuration for Docker
+  datasource:
+    url: jdbc:mysql://mysql:3306/asset_management?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+  
+  # Disable Kafka for Docker POC
+  kafka:
+    bootstrap-servers: ""
+    consumer:
+      group-id: ""
+      auto-offset-reset: ""
+      key-deserializer: ""
+      value-deserializer: ""
+    producer:
+      key-serializer: ""
+      value-serializer: ""
+  
+  # Disable Kafka auto-configuration
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
+# Logging Configuration for Docker
+logging:
+  level:
+    com.example.asset_management: INFO
+    org.springframework.kafka: OFF
+    org.springframework.security: INFO
