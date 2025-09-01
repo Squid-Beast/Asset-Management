@@ -1,0 +1,17 @@
+target/
+!target/*.war
+!target/*.jar
+.git
+.gitignore
+README.md
+HELP.md
+*.md
+.idea/
+*.iml
+.vscode/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
